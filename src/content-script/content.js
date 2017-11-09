@@ -1,19 +1,24 @@
-const checkmarkHtml = ' <i class="js-show-tip sprite sprite-verified-mini" title="" data-original-title="Not really verified account"></i>';
+const checkmarkHtml = '<span class="Icon Icon--verified"><span class="u-hiddenVisually">Verified account</span></span>';
 
 Array
-  .from(document.querySelectorAll('a.account-inline b, span.account-inline b'))
-  .filter(e => e.nextElementSibling.nodeName !== 'I')
-  .forEach(e => e.insertAdjacentHTML('afterend',checkmarkHtml));
+  .from(document.querySelectorAll('span.UserBadges'))
+  .filter(e => e.children.length == 0)
+  .forEach(e => e.insertAdjacentHTML('afterbegin',checkmarkHtml));
 
 // watch for matching tweets that are added to DOM later
 const observer = new MutationObserver(mutations => {
   mutations
-    .filter(m => shouldCheckContent(m.target, m.type))
     .forEach(m => {
       m.addedNodes.forEach(n => {
-        var e = n.querySelector('a.account-inline b, span.account-inline b');
-        if ( e && e.nextElementSibling && e.nextElementSibling.nodeName !== 'I') {
-          e.insertAdjacentHTML('afterend',checkmarkHtml);
+        console.info(n.nodeName);
+
+        var e = n.querySelectorAll('span.UserBadges');
+        if (e) {
+          e.forEach(element => {
+            if (element && element.children.length == 0) {
+              element.insertAdjacentHTML('afterbegin', checkmarkHtml);
+            }
+          });
         }
       });
     });
@@ -21,7 +26,7 @@ const observer = new MutationObserver(mutations => {
 
 function shouldCheckContent(target, mutationType) {
   return mutationType === 'childList'
-    && target && target.nodeName === 'DIV' && target.classList.contains('chirp-container')
+    && target && target.nodeName === 'SPAN' && target.classList.contains('UserBadges')
 }
 
 const config = {
@@ -30,4 +35,7 @@ const config = {
   childList: true,
   subtree: true
 };
-observer.observe(document.body, config);
+
+var stream = document.getElementById('stream-items-id');
+
+observer.observe(stream, config);
